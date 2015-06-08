@@ -50,7 +50,9 @@ public class productClass extends HttpServlet {
         }
         return conn;
     }
-
+    
+    
+    //Getteing results using JSON
     private String getResults(String query, String... params) {
         String result = new String();
         try (Connection conn = getConnection()) {
@@ -61,12 +63,13 @@ public class productClass extends HttpServlet {
             ResultSet rs = pstmt.executeQuery();
             JSONArray productArr = new JSONArray();
             while (rs.next()) {
-                Map productMap = new LinkedHashMap();
-                productMap.put("productID", rs.getInt("productID"));
-                productMap.put("name", rs.getString("name"));
-                productMap.put("description", rs.getString("description"));
-                productMap.put("quantity", rs.getInt("quantity"));
-                productArr.add(productMap);
+                //Mapping the objects
+                Map productMapping = new LinkedHashMap();
+                productMapping.put("productID", rs.getInt("productID"));
+                productMapping.put("name", rs.getString("name"));
+                productMapping.put("description", rs.getString("description"));
+                productMapping.put("quantity", rs.getInt("quantity"));
+                productArr.add(productMapping);
             }
             result = productArr.toString();
         } catch (SQLException ex) {
@@ -78,6 +81,8 @@ public class productClass extends HttpServlet {
     /**
      * Handles the HTTP <code>GET</code> method.
      *
+     * Select statement for the database connect to retrieve values
+     * 
      * @param request servlet request
      * @param response servlet response
      */
@@ -98,6 +103,10 @@ public class productClass extends HttpServlet {
     /**
      * Handles the HTTP <code>POST</code> method.
      *
+     * 
+     * Insertion of values into the database connection
+     * 
+     * 
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -109,7 +118,7 @@ public class productClass extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             Connection conn = getConnection();
             if (keySet.contains("name") && keySet.contains("description") && keySet.contains("quantity")) {
-                PreparedStatement pstmt = conn.prepareStatement("INSERT INTO `product`(`productID`, `name`, `description`, `quantity`) "
+                PreparedStatement pstmt = conn.prepareStatement("INSERT INTO product(productID, name, description, quantity) "
                         + "VALUES (null, '" + request.getParameter("name") + "', '"
                         + request.getParameter("description") + "', "
                         + request.getParameter("quantity") + ");"
@@ -129,17 +138,21 @@ public class productClass extends HttpServlet {
             Logger.getLogger(productClass.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    /*
+    * Update statement 
+    * To change the values inthe database
+    *
+    */
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Set<String> keySet = request.getParameterMap().keySet();
         try (PrintWriter out = response.getWriter()) {
             Connection conn = getConnection();
             if (keySet.contains("productID") && keySet.contains("name") && keySet.contains("description") && keySet.contains("quantity")) {
-                PreparedStatement pstmt = conn.prepareStatement("UPDATE `product` SET `name`='"
+                PreparedStatement pstmt = conn.prepareStatement("UPDATE product SET name='"
                         + request.getParameter("name") + "',`description`='"
                         + request.getParameter("description")
-                        + "',`quantity`=" + request.getParameter("quantity")
+                        + "',quantity=" + request.getParameter("quantity")
                         + " WHERE `productID`=" + request.getParameter("productID"));
                 try {
                     pstmt.executeUpdate();
@@ -155,7 +168,8 @@ public class productClass extends HttpServlet {
             Logger.getLogger(productClass.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+//    Delete Statement
+//    Used to delete data from the database
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Set<String> keySet = request.getParameterMap().keySet();
